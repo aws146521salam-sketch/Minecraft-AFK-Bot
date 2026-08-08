@@ -1,66 +1,21 @@
-const mineflayer = require('mineflayer');
+const bedrock = require('bedrock-protocol');
 const config = require('./config.json');
 
-const bot = mineflayer.createBot({
+const client = bedrock.createClient({
   host: config.serverHost,
   port: config.serverPort,
   username: config.botUsername,
-  auth: 'offline',
-  version: false,
-  viewDistance: config.botChunk
+  offline: true
 });
 
-let movementPhase = 0;
-const STEP_INTERVAL = 1500;
-const STEP_SPEED    = 1;
-const JUMP_DURATION = 500;
-
-bot.on('spawn', () => {
-  setTimeout(() => {
-    bot.setControlState('sneak', true);
-    console.log(`✅ ${config.botUsername} is Ready!`);
-  }, 3000);
-
-  setTimeout(movementCycle, STEP_INTERVAL);
+client.on('connect', () => {
+  console.log('البوت يحاول الاتصال بسيرفر البدروك...');
 });
 
-function movementCycle() {
-  if (!bot.entity) return;
-
-  switch (movementPhase) {
-    case 0:
-      bot.setControlState('forward', true);
-      bot.setControlState('back', false);
-      bot.setControlState('jump', false);
-      break;
-    case 1:
-      bot.setControlState('forward', false);
-      bot.setControlState('back', true);
-      bot.setControlState('jump', false);
-      break;
-    case 2:
-      bot.setControlState('forward', false);
-      bot.setControlState('back', false);
-      bot.setControlState('jump', true);
-      setTimeout(() => {
-        bot.setControlState('jump', false);
-      }, JUMP_DURATION);
-      break;
-    case 3:
-      bot.setControlState('forward', false);
-      bot.setControlState('back', false);
-      bot.setControlState('jump', false);
-      break;
-  }
-
-  movementPhase = (movementPhase + 1) % 4;
-
-  setTimeout(movementCycle, STEP_INTERVAL);
-}
-
-bot.on('error', (err) => {
-  console.error('⚠️ Error:', err);
+client.on('spawn', () => {
+  console.log('تم الاتصال! البوت الآن موجود داخل السيرفر.');
 });
-bot.on('end', () => {
-  console.log('⛔️ Bot Disconnected!');
+
+client.on('error', (err) => {
+  console.log('خطأ في الاتصال:', err);
 });
